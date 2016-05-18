@@ -1,0 +1,37 @@
+CRYPT fulldisk + lvm (no external /boot)
+DO NOT "install additional software and service"
+BEFORE "install grub boot loader on hard drive"
+
+CTRL+ALT+F2
+mount --bind /sys /target/sys
+mount --bind /dev /target/dev
+mount --bind /dev/pts /target/dev/pts
+chroot /target /bin/bash
+
+apt-get -y remove --purge --auto-remove systemd
+cat > /etc/apt/preferences.d/systemd  <<EOF
+Package: systemd
+Pin: origin ""
+Pin-Priority: -1
+
+Package: *systemd*
+Pin: origin ""
+Pin-Priority: -1
+EOF
+
+apt-get install -y sysvinit-core
+cp /usr/share/sysvinit/inittab /etc/inittab
+
+apt-get -y remove --purge --auto-remove installation-report popularity-contest nano tasksel tasksel-data
+apt-get -f install
+#apt-get install -y powermgmt-base acpi iw
+
+cat >> /target/etc/default/grub <<EOF
+
+# Install to encrypted disk
+GRUB_ENABLE_CRYPTODISK=y
+EOF
+update-grub
+#[grub-install --force-extra-removable --force "/dev/sda"]
+
+CTRL+d
