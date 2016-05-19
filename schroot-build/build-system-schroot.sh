@@ -14,9 +14,9 @@ MIRROR=http://ftp.debian.org/debian
   exit 1
 }
 
-[ -z "$(aptitude show schroot | grep '^State: installed')" ] && {
-  aptitude update && aptitude -y install schroot debootstrap && {
-}
+if ! which schroot; then
+  aptitude update && aptitude -y install schroot debootstrap
+fi
 
 [ -z "$(aptitude show deborphan | grep '^State: installed')" ] && {
   aptitude install -y deborphan unattended-upgrades && {
