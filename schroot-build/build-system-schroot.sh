@@ -14,11 +14,13 @@ MIRROR=http://ftp.debian.org/debian
   exit 1
 }
 
-if ! which schroot; then
+if ! which schroot
+then
   aptitude update && aptitude -y install schroot debootstrap
 fi
 
-[ -z "$(aptitude show deborphan | grep '^State: installed')" ] && {
+if ! which deborphan
+then
   aptitude install -y deborphan unattended-upgrades && {
     cat > /etc/apt/apt.conf.d/02periodic <<EOF
 APT::Periodic::Enable "1";
@@ -28,16 +30,16 @@ APT::Periodic::Unattended-Upgrade "1";
 APT::Periodic::AutocleanInterval "1";
 APT::Periodic::Verbose "0";
 EOF
-  } && {
-    aptitude -y purge $(deborphan -n --guess-all)
-    aptitude -f install
-    aptitude -y purge $(deborphan -n --guess-all)
-    aptitude -f install
-    apt-get autoremove
-    apt-get autoclean
-    apt-get clean
   }
-}
+else
+  aptitude -y purge $(deborphan -n --guess-all)
+  aptitude -f install
+  aptitude -y purge $(deborphan -n --guess-all)
+  aptitude -f install
+  apt-get autoremove
+  apt-get autoclean
+  apt-get clean
+fi
 
 [ ! -e /etc/schroot/server ] && {
   cp -a /etc/schroot/minimal /etc/schroot/server
